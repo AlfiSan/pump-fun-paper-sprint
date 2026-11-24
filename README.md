@@ -16,18 +16,19 @@ positive, several distinct wallets buying, the price still near its recent
 high, and the newer half of the tape buying harder than the older half.
 Then ride it while the tape stays hot and get out fast when it turns:
 
-- **Size:** 0.20 SOL first buy, scaled in to 0.50 SOL per coin while the
+- **Size:** 0.40 SOL first buy, scaled in to 1.00 SOL per coin while the
   price keeps climbing; at most 5 coins open at once.
-- **Exits** (checked every batch): stop loss at -10% of cost; a trailing
-  exit once up +40%, selling on an 8% pullback from the peak; a time exit
+- **Exits** (checked every batch): stop loss at -8% of cost; a trailing
+  exit once up +70%, selling on an 8% pullback from the peak; a time exit
   after 2,000 slots unless the position is up at least 10%.
 - **Discipline:** no entry into a coin older than 4,000 slots, no re-entry
   within 25 batches of an exit, at most 3 entries per coin.
 
-On the kit's dev window this scores about **+1.32 SOL** over 50 round trips
-on 39 distinct coins (13 wins), with a 2.9% worst drawdown — against
--9.38 SOL for the kit's pilot momentum bot on the same window. It stays
-positive (+0.79 SOL) even at double fees.
+On the kit's full dev window (all three dataset parts, 128,058 events) this
+scores about **+3.49 SOL** over 161 round trips on 123 distinct coins
+(19 wins), with a 21.3% worst drawdown — and it stays positive (+0.44 SOL)
+even at double fees — against -9.38 SOL for the kit's pilot momentum bot on
+the same window.
 
 ## Run it
 

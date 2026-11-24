@@ -1,4 +1,4 @@
-// Quick offline sweep over strategy params on the dev window.
+// Full-window sweep (all three dataset parts) over strategy params.
 // Prints one line per combo: net SOL, trips, wins, coins, drawdown.
 import { createStrategy, DEFAULT_PARAMS, type Params } from '../strategy.ts';
 import { loadDataset, makeHello, phaseSeed, simulate } from './sim.ts';
@@ -10,18 +10,19 @@ const sol = (x: bigint) => (Number(x) / 1e9).toFixed(3);
 
 function run(name: string, over: Partial<Params>): void {
   const r = simulate(ds, hello, createStrategy({ ...DEFAULT_PARAMS, ...over }));
+  const calm = simulate(ds, hello, createStrategy({ ...DEFAULT_PARAMS, ...over }), { failKey: null });
+  const pricey = simulate(ds, hello, createStrategy({ ...DEFAULT_PARAMS, ...over }), { feeMultiplier: 2n });
   const wins = r.trips.filter((t) => t.pnl > 0n).length;
-  console.log(`${name} net ${sol(r.netPnl)} trips ${r.trips.length} wins ${wins} coins ${r.mints} dd ${(r.maxDrawdown * 100).toFixed(1)}%`);
+  console.log(`${name} net ${sol(r.netPnl)} (noFail ${sol(calm.netPnl)} 2xFees ${sol(pricey.netPnl)}) trips ${r.trips.length} wins ${wins} coins ${r.mints} dd ${(r.maxDrawdown * 100).toFixed(1)}%`);
 }
 
-const best = { minRise: 0.4, fadeNetSol: -100, stopLoss: 0.08, trailGiveback: 0.08, trailArm: 0.4 };
+const pick = { trailArm: 0.7, targetStakeSol: 1.0, firstBuySol: 0.4, stopLoss: 0.08 };
 for (const [name, over] of [
-  ['stake.5 rise.45', { ...best, targetStakeSol: 0.5, firstBuySol: 0.2, minRise: 0.45 }],
-  ['stake.5 sl.10', { ...best, targetStakeSol: 0.5, firstBuySol: 0.2, stopLoss: 0.1 }],
-  ['stake.5 rise.45 sl.10', { ...best, targetStakeSol: 0.5, firstBuySol: 0.2, minRise: 0.45, stopLoss: 0.1 }],
-  ['stake.5 rise.45 gb.06', { ...best, targetStakeSol: 0.5, firstBuySol: 0.2, minRise: 0.45, trailGiveback: 0.06 }],
-  ['stake.5 rise.45 arm.50', { ...best, targetStakeSol: 0.5, firstBuySol: 0.2, minRise: 0.45, trailArm: 0.5 }],
-  ['stake.5 rise.45 fade-5', { ...best, targetStakeSol: 0.5, firstBuySol: 0.2, minRise: 0.45, fadeNetSol: -5 }],
+  ['PICK arm.7 stake1.0 sl.08', pick],
+  ['arm.6 stake1.0', { ...pick, trailArm: 0.6 }],
+  ['arm1.0 stake1.0', { ...pick, trailArm: 1.0 }],
+  ['arm.7 stake.85', { ...pick, targetStakeSol: 0.85, firstBuySol: 0.35 }],
+  ['arm.7 stake1.0 nearHigh.90', { ...pick, nearHigh: 0.9 }],
 ] as Array<[string, Partial<Params>]>) {
   run(name, over);
 }

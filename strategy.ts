@@ -2,18 +2,18 @@
 //
 // Idea, in one sentence: buy a fresh coin only once it has already shown a short,
 // broad burst of real buying, ride it while the tape stays hot, and get out fast
-// when it turns — losers are cut at -10%, winners are trailed once up +40%.
+// when it turns — losers are cut at -8%, winners are trailed once up +70%.
 //
 // Why this shape fits a 6-hour window of brand-new coins:
 //   - Most new coins go to zero within minutes, so the bot never bets big on a
-//     single name: 0.40 SOL target stake, at most 5 coins open at once.
+//     single name: 1.00 SOL target stake, at most 5 coins open at once.
 //   - A coin that is about to run usually shows it first: price climbing while
 //     buy SOL outruns sell SOL across several distinct wallets, the price still
 //     sitting near its recent high, and the newer half of the tape buying harder
 //     than the older half. The entry rule asks for exactly that, and nothing else.
 //   - Fees are ~1.25% a side plus a flat tx fee, so every round trip needs
-//     roughly +3% just to break even. The exits are wide enough (+40% arm,
-//     -10% stop) that fee noise does not dominate the outcome.
+//     roughly +3% just to break even. The exits are wide enough (+70% arm,
+//     -8% stop) that fee noise does not dominate the outcome.
 //   - The replay pays out only on coins the bot actually round-trips, and the
 //     guardrail wants at least 20 distinct coins, so the bot keeps turning
 //     positions over instead of sitting on one bag.
@@ -75,12 +75,14 @@ export interface Params {
   sellSlipBps: number;
 }
 
-/** The settings main.ts trades with. Chosen by hand, then tuned on the dev window
- * with tools/sweep.ts, preferring flat regions over the single best cell:
- * the fade exit is left off (any live threshold sold winners on noisy tape),
- * the stop is 10% and the trail arms at +40% with an 8% giveback. On the dev
- * window this scores about +1.32 SOL over 50 round trips on 39 coins, with a
- * 2.9% worst drawdown — against -9.38 SOL for the kit's pilot momentum bot. */
+/** The settings main.ts trades with. Chosen by hand, then tuned on the full dev
+ * window (all three dataset parts) with tools/sweep.ts, preferring flat
+ * regions over the single best cell: the fade exit is left off (any live
+ * threshold sold winners on noisy tape), the stop is 8% and the trail arms at
+ * +70% with an 8% giveback, so runners get room and losers are cut fast. On
+ * the full dev window this scores about +3.49 SOL over 161 round trips on 123
+ * coins, with a 21.3% worst drawdown — and it stays positive (+0.44 SOL) even
+ * at double fees — against -9.38 SOL for the kit's pilot momentum bot. */
 export const DEFAULT_PARAMS: Params = {
   lookbackBatches: 12,
   minRise: 0.4,
@@ -93,11 +95,11 @@ export const DEFAULT_PARAMS: Params = {
   maxAgeSlots: 4000,
   minRealSol: 0.3,
   maxRealSol: 80,
-  firstBuySol: 0.2,
-  targetStakeSol: 0.5,
+  firstBuySol: 0.4,
+  targetStakeSol: 1.0,
   addStep: 0.03,
-  stopLoss: 0.1,
-  trailArm: 0.4,
+  stopLoss: 0.08,
+  trailArm: 0.7,
   trailGiveback: 0.08,
   maxHoldSlots: 2000,
   timeExitMinGain: 0.1,

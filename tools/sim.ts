@@ -3,7 +3,7 @@
 // imports this file; the grader's own engine is what scores. Kept faithful enough that a run here
 // should land on the same net PnL as `agentfun grade-local` for the same strategy.
 
-import { readFileSync } from 'node:fs';
+import { readFileSync, readdirSync } from 'node:fs';
 import { gunzipSync } from 'node:zlib';
 import { createHash } from 'node:crypto';
 import { BotState, type Batch, type Bot, type Fill, type Hello, type Mark, type Order } from '../vendor/makefun-bot.ts';
@@ -93,7 +93,13 @@ export interface Dataset {
 export function loadDataset(kit: string): Dataset {
   const kitJson = JSON.parse(readFileSync(`${kit}/kit.json`, 'utf8'));
   const manifest = JSON.parse(readFileSync(`${kit}/dataset/manifest.json`, 'utf8'));
-  const raw = gunzipSync(readFileSync(`${kit}/dataset/events/part-00000.ndjson.gz`)).toString('utf8');
+  // NOTE (local tooling only): the kit ships the dev window in three parts; the
+  // pilot's loader reads part-00000 alone. Read every part in order so the
+  // local replay covers the same 128,058 events the official grader sees.
+  const parts = readdirSync(`${kit}/dataset/events`)
+    .filter((f: string) => f.endsWith('.ndjson.gz'))
+    .sort();
+  const raw = parts.map((f: string) => gunzipSync(readFileSync(`${kit}/dataset/events/${f}`)).toString('utf8')).join('\n');
   const all = raw.split('\n').filter((l) => l.length > 0).map((l) => JSON.parse(l));
   const { modulus, residue } = manifest.universe.sample;
   const excluded = new Set<string>(manifest.excluded_mints ?? []);
